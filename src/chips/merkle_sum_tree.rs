@@ -384,6 +384,8 @@ impl<const MST_WIDTH: usize, const N_ASSETS: usize> MerkleSumTreeChip<MST_WIDTH,
         // Initiate the overflow check chip
         let overflow_chip = OverflowChip::construct(self.config.overflow_check_config.clone());
 
+        overflow_chip.load(&mut layouter)?;
+
         // Each balance cell is constrained to be less than the maximum limit
         overflow_chip.assign(
             layouter.namespace(|| "overflow check left balance"),
