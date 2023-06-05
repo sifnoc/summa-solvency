@@ -113,15 +113,7 @@ impl<const MST_WIDTH: usize, const N_ASSETS: usize> MerkleSumTreeChip<MST_WIDTH,
                 .collect::<Vec<_>>()
         });
 
-        let advice_columns_poseidon_chip = (0..WIDTH_NODE)
-            .map(|_| meta.advice_column())
-            .collect::<Vec<_>>();
-
-        let poseidon_config =
-            PoseidonChip::<PoseidonSpecNode, WIDTH_NODE, R_L_NODE, R_L_NODE>::configure(
-                meta,
-                &advice_columns_poseidon_chip,
-            );
+        let poseidon_config = PoseidonChip::<Spec4, WIDTH, RATE, L>::configure(meta);
 
         // configure lt chip
         let lt_config = LtChip::configure(
