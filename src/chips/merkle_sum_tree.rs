@@ -381,11 +381,11 @@ impl<const MST_WIDTH: usize, const N_ASSETS: usize> MerkleSumTreeChip<MST_WIDTH,
         // Each balance cell is constrained to be less than the maximum limit
         overflow_chip.assign(
             layouter.namespace(|| "overflow check left balance"),
-            left_balance.value().map(|x| x.to_owned()),
+            left_balance,
         )?;
         overflow_chip.assign(
             layouter.namespace(|| "overflow check right balance"),
-            right_balance.value().map(|x| x.to_owned()),
+            right_balance,
         )?;
 
         Ok((computed_hash, computed_sum_cells))
