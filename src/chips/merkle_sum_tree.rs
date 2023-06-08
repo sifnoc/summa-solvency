@@ -113,7 +113,8 @@ impl<const MST_WIDTH: usize, const N_ASSETS: usize> MerkleSumTreeChip<MST_WIDTH,
                 .collect::<Vec<_>>()
         });
 
-        let poseidon_config = PoseidonChip::<Spec4, WIDTH, RATE, L>::configure(meta);
+        let poseidon_config =
+            PoseidonChip::<PoseidonSpecNode, WIDTH_NODE, R_L_NODE, R_L_NODE>::configure(meta);
 
         // configure lt chip
         let lt_config = LtChip::configure(
@@ -379,14 +380,19 @@ impl<const MST_WIDTH: usize, const N_ASSETS: usize> MerkleSumTreeChip<MST_WIDTH,
         overflow_chip.load(&mut layouter)?;
 
         // Each balance cell is constrained to be less than the maximum limit
-        overflow_chip.assign(
-            layouter.namespace(|| "overflow check left balance"),
-            left_balance,
-        )?;
-        overflow_chip.assign(
-            layouter.namespace(|| "overflow check right balance"),
-            right_balance,
-        )?;
+        for left_balance in left_balances.iter() {
+            overflow_chip.assign(
+                layouter.namespace(|| "overflow check left balance"),
+                &left_balance,
+            )?;
+        }
+
+        for right_balance in right_balances.iter() {
+            overflow_chip.assign(
+                layouter.namespace(|| "overflow check right balance"),
+                &right_balance,
+            )?;
+        }
 
         Ok((computed_hash, computed_sum_cells))
     }

@@ -38,9 +38,11 @@ pub fn parse_csv_to_entries<P: AsRef<Path>, const N_ASSETS: usize>(
     // modulus from bn256 curve impl => https://github.com/privacy-scaling-explorations/halo2curves/blob/main/src/bn256/fr.rs#L38
     const MODULUS_STR: &str = "30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001";
 
-    // throw error if balance is larger than the modulus
-    if balance_acc >= BigInt::parse_bytes(MODULUS_STR.as_bytes(), 16).unwrap() {
-        return Err("Balance is larger than the modulus".into());
+    // Iterate through the balance accumulator and throw error if any balance is larger than the modulus:
+    for balance in balances_acc {
+        if balance > BigInt::parse_bytes(MODULUS_STR.as_bytes(), 16).unwrap() {
+            return Err("Balance is larger than the modulus".into());
+        }
     }
 
     Ok(entries)

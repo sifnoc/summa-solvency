@@ -134,7 +134,7 @@ mod test {
                     location: FailureLocation::OutsideRegion { row: 2 }
                 },
                 VerifyFailure::Permutation {
-                    column: (Any::advice(), 38).into(),
+                    column: (Any::advice(), 39).into(),
                     location: FailureLocation::InRegion {
                         region: (25, "permute state").into(),
                         offset: 38
@@ -216,7 +216,7 @@ mod test {
                     location: FailureLocation::OutsideRegion { row: 2 }
                 },
                 VerifyFailure::Permutation {
-                    column: (Any::advice(), 38).into(),
+                    column: (Any::advice(), 39).into(),
                     location: FailureLocation::InRegion {
                         region: (25, "permute state").into(),
                         offset: 38
@@ -302,7 +302,7 @@ mod test {
                     location: FailureLocation::OutsideRegion { row: 2 }
                 },
                 VerifyFailure::Permutation {
-                    column: (Any::advice(), 38).into(),
+                    column: (Any::advice(), 39).into(),
                     location: FailureLocation::InRegion {
                         region: (25, "permute state").into(),
                         offset: 38
@@ -396,7 +396,7 @@ mod test {
                     location: FailureLocation::OutsideRegion { row: 2 }
                 },
                 VerifyFailure::Permutation {
-                    column: (Any::advice(), 38).into(),
+                    column: (Any::advice(), 39).into(),
                     location: FailureLocation::InRegion {
                         region: (25, "permute state").into(),
                         offset: 38
@@ -437,7 +437,7 @@ mod test {
                     location: FailureLocation::OutsideRegion { row: 2 }
                 },
                 VerifyFailure::Permutation {
-                    column: (Any::advice(), 38).into(),
+                    column: (Any::advice(), 39).into(),
                     location: FailureLocation::InRegion {
                         region: (25, "permute state").into(),
                         offset: 38
@@ -488,7 +488,7 @@ mod test {
                 cell_values: vec![
                     (((Any::advice(), 2).into(), 0).into(), "1".to_string()),
                     // The zero means that is not less than
-                    (((Any::advice(), 43).into(), 0).into(), "0".to_string())
+                    (((Any::advice(), 44).into(), 0).into(), "0".to_string())
                 ]
             }])
         );
