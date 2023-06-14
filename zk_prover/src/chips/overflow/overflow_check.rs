@@ -83,6 +83,7 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChip<MAX_BITS, ACC_COLS>
             meta.lookup_any("range check for MAXBITS", |meta| {
                 let cell = meta.query_advice(*column, Rotation::cur());
                 let range = meta.query_fixed(range, Rotation::cur());
+                println!("cell: {:?}, range: {:?}", cell, range);
                 vec![(cell, range)]
             });
         });
@@ -116,6 +117,8 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChip<MAX_BITS, ACC_COLS>
                     MAX_BITS as usize,
                 ) as Vec<Fp>;
 
+                println!("decomposed_values: {:?}", decomposed_values);
+
                 // Note that, decomposed result is little edian. So, we need to reverse it.
                 for (idx, val) in decomposed_values.iter().rev().enumerate() {
                     let _cell = region.assign_advice(
@@ -124,6 +127,7 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChip<MAX_BITS, ACC_COLS>
                         0,
                         || Value::known(*val),
                     )?;
+                    println!("assign cell: {:?}", _cell);
                 }
 
                 Ok(())
@@ -138,12 +142,13 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChip<MAX_BITS, ACC_COLS>
             || format!("load range check table of {} bits", MAX_BITS),
             |mut region| {
                 for i in 0..range {
-                    region.assign_fixed(
+                    let _cell = region.assign_fixed(
                         || "assign cell in fixed column",
                         self.config.range,
                         i,
                         || Value::known(Fp::from(i as u64)),
                     )?;
+                    println!("load cell: {:?}", _cell);
                 }
                 Ok(())
             },

@@ -1,4 +1,5 @@
 use crate::chips::overflow::overflow_check::{OverflowCheckConfig, OverflowChip};
+use crate::chips::overflow::overflow_check_t::{OverflowCheckTConfig, OverflowChipT};
 use halo2_proofs::{circuit::*, plonk::*, poly::Rotation};
 
 use halo2_proofs::halo2curves::bn256::Fr as Fp;
@@ -149,8 +150,71 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> Circuit<Fp>
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct OverflowCheckTTestConfig<const MAX_BITS: u8, const ACC_COLS: usize> {
+    pub addchip_config: AddConfig,
+    pub overflow_check_config: OverflowCheckTConfig<MAX_BITS, ACC_COLS>,
+}
+
+#[derive(Default, Clone, Debug)]
+struct OverflowCheckTTestCircuit<const MAX_BITS: u8, const ACC_COLS: usize> {
+    pub a: Fp,
+    pub b: Fp,
+}
+
+impl<const MAX_BITS: u8, const ACC_COLS: usize> Circuit<Fp>
+    for OverflowCheckTTestCircuit<MAX_BITS, ACC_COLS>
+{
+    type Config = OverflowCheckTTestConfig<MAX_BITS, ACC_COLS>;
+    type FloorPlanner = SimpleFloorPlanner;
+
+    fn without_witnesses(&self) -> Self {
+        Self::default()
+    }
+
+    fn configure(meta: &mut ConstraintSystem<Fp>) -> Self::Config {
+        let addchip_config = AddChip::configure(meta);
+        let overflow_check_config = OverflowChipT::<MAX_BITS, ACC_COLS>::configure(meta);
+
+        {
+            OverflowCheckTTestConfig {
+                addchip_config,
+                overflow_check_config,
+            }
+        }
+    }
+
+    fn synthesize(
+        &self,
+        config: Self::Config,
+        mut layouter: impl Layouter<Fp>,
+    ) -> Result<(), Error> {
+        // Initiate the add chip
+        let addchip = AddChip::construct(config.addchip_config);
+        let (a_cell, b_cell, c_cell) =
+            addchip.default(self.a, self.b, layouter.namespace(|| "add chip"))?;
+
+        // Initiate the overflow check chip
+        let overflow_chip = OverflowChipT::construct(config.overflow_check_config);
+        overflow_chip.load(&mut layouter)?;
+
+        // check overflow
+        overflow_chip.assign(layouter.namespace(|| "checking overflow value a"), &a_cell)?;
+        overflow_chip.assign(layouter.namespace(|| "checking overflow value b"), &b_cell)?;
+
+        // to perform a + b as part of test
+        overflow_chip.assign(
+            layouter.namespace(|| "checking overflow value a + b"),
+            &c_cell,
+        )?;
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use super::OverflowCheckTTestCircuit;
     use super::OverflowCheckTestCircuit;
     use halo2_proofs::{
         dev::{FailureLocation, MockProver, VerifyFailure},
@@ -167,6 +231,19 @@ mod tests {
         let b = Fp::from(1);
 
         let circuit = OverflowCheckTestCircuit::<4, 4> { a, b };
+        let prover = MockProver::run(k, &circuit, vec![]).unwrap();
+        prover.assert_satisfied();
+    }
+
+    #[test]
+    fn test_none_overflowT_16bits_case() {
+        let k = 5;
+
+        // a: new value
+        let a = Fp::from((1 << 16) - 2);
+        let b = Fp::from(1);
+
+        let circuit = OverflowCheckTTestCircuit::<4, 4> { a, b };
         let prover = MockProver::run(k, &circuit, vec![]).unwrap();
         prover.assert_satisfied();
     }
