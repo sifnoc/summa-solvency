@@ -236,7 +236,7 @@ mod tests {
     }
 
     #[test]
-    fn test_none_overflowT_16bits_case() {
+    fn test_none_overflow_t_16bits_case() {
         let k = 5;
 
         // a: new value
@@ -276,6 +276,39 @@ mod tests {
                     (((Any::advice(), 5).into(), 0).into(), "0".to_string()),
                     (((Any::advice(), 6).into(), 0).into(), "0".to_string()),
                     (((Any::advice(), 7).into(), 0).into(), "1".to_string()),
+                ]
+            }])
+        );
+    }
+
+    #[test]
+    fn test_overflow_t_16bits_case() {
+        let k = 5;
+
+        let a = Fp::from((1 << 16) - 2);
+        let b = Fp::from(3);
+
+        let circuit = OverflowCheckTTestCircuit::<4, 4> { a, b };
+        let invalid_prover = MockProver::run(k, &circuit, vec![]).unwrap();
+        assert_eq!(
+            invalid_prover.verify(),
+            Err(vec![VerifyFailure::ConstraintNotSatisfied {
+                constraint: (
+                    (1, "equality check between decomposed_value and value").into(),
+                    0,
+                    ""
+                )
+                    .into(),
+                location: FailureLocation::InRegion {
+                    region: (4, "assign decomposed values").into(),
+                    offset: 0
+                },
+                cell_values: vec![
+                    (((Any::advice(), 3).into(), 0).into(), "0x10001".to_string()),
+                    (((Any::advice(), 4).into(), 0).into(), "0".to_string()),
+                    (((Any::advice(), 4).into(), 1).into(), "0".to_string()),
+                    (((Any::advice(), 4).into(), 2).into(), "0".to_string()),
+                    (((Any::advice(), 4).into(), 3).into(), "1".to_string()),
                 ]
             }])
         );

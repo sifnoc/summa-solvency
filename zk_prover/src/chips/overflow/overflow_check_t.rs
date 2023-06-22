@@ -27,6 +27,7 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
         let range = meta.fixed_column();
         let a = meta.advice_column();
         let b = meta.advice_column();
+        let toggle_overflow_check = meta.complex_selector();
 
         meta.create_gate(
             "equality check between decomposed_value and value",
@@ -35,19 +36,9 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
 
                 let value = meta.query_advice(a, Rotation::cur());
 
-                let mut decomposed_value_vec: Vec<Expression<Fp>> = vec![
-                    meta.query_advice(b, Rotation::cur()),
-                    meta.query_advice(b, Rotation::next()),
-                ];
-
-                // decomposed_value_vec.push(
-                //     (2..ACC_COLS)
-                //         .map(|i: usize| meta.query_advice(b, Rotation(i)))
-                //         .collect::<Vec<_>>(),
-                // );
-                for i in 2..ACC_COLS {
-                    decomposed_value_vec.push(meta.query_advice(b, Rotation(i as i32)));
-                }
+                let decomposed_value_vec: Vec<Expression<Fp>> = (0..ACC_COLS)
+                    .map(|i| meta.query_advice(b, Rotation(i as i32)))
+                    .collect();
 
                 // multiplier by position of accumulator column
                 // e.g. for ACC_COLS = 3, multiplier = [2^(2*MAX_BITS), 2^MAX_BITS, 1]
@@ -60,7 +51,7 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
                 };
 
                 // We are performing an important calculation here to check for overflow in finite field numbers.
-                // A single range table is utilized which applies `1 << 8` to decompose the columns for range checking.
+                // A single range table is utilized which applies `1 << 8` to decompose the column 'b' for range checking.
                 //
                 // Consider the example where ACC_COLS = 3, the decomposed values would be represented as follows:
                 //
@@ -84,7 +75,6 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
                         acc + (decomposed_value_vec[i].clone() * multiplier(cursor))
                     },
                 );
-                println!("decomposed_value_sum: {:?}", decomposed_value_sum);
 
                 vec![s_doc * (decomposed_value_sum - value)]
             },
@@ -92,52 +82,14 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
 
         meta.annotate_lookup_any_column(range, || "LOOKUP_MAXBITS_RANGE");
 
-        // [0..ACC_COLS].map(|i| {
-        //     meta.lookup_any("range check for MAXBITS", |meta| {
-        //         let cell = meta.query_advice(b, Rotation(i as i32));
-        //         let range = meta.query_fixed(range, Rotation::cur());
-        //         vec![(cell, range)]
-        //     });
-        // });
-
-        // for i in 2..ACC_COLS {
-        //     meta.lookup_any("range check for MAXBITS", |meta| {
-        //         // let cell = meta.query_advice(b, Rotation::cur());
-        //         let cell = meta.query_advice(b, Rotation(i as i32));
-        //         let range = meta.query_fixed(range, Rotation(i as i32));
-        //         // TODO: query TableColumn
-
-        //         // let range = meta.query_fixed(range, Rotation::cur());
-        //         println!("i: {}, cell: {:?}, range: {:?}", i, cell, range);
-        //         vec![(cell, range)]
-        //     });
-        // }
-
-        let lookup_result_0 = meta.lookup_any("range check within MAXBITS - row 0", |meta| {
-            let cell = meta.query_advice(b, Rotation::cur());
-            let range = meta.query_fixed(range, Rotation::cur());
-            println!("cell: {:?}, range: {:?}", cell, range);
-            vec![(cell, range)]
-        });
-        println!("lookup_result_0: {:?}", lookup_result_0);
-
-        let lookup_result_1 = meta.lookup_any("range check within MAXBITS - row 1", |meta| {
-            let cell = meta.query_advice(b, Rotation::next());
-            let range = meta.query_fixed(range, Rotation::cur());
-
-            println!("cell_1: {:?}, range: {:?}", cell, range);
-            vec![(cell, range)]
-        });
-        println!("lookup_result_1: {:?}", lookup_result_1);
-
-        let lookup_result_2 = meta.lookup_any("range check within MAXBITS - row 2", |meta| {
-            let cell = meta.query_advice(b, Rotation(2));
-            let range = meta.query_fixed(range, Rotation::cur());
-
-            println!("cell_2: {:?}, range: {:?}", cell, range);
-            vec![(cell, range)]
-        });
-        println!("lookup_result_2: {:?}", lookup_result_2);
+        for i in 2..ACC_COLS {
+            meta.lookup_any("range check for MAXBITS", |meta| {
+                let cell = meta.query_advice(b, Rotation(i as i32));
+                let range = meta.query_fixed(range, Rotation::cur());
+                let enable_lookup = meta.query_selector(toggle_overflow_check);
+                vec![(enable_lookup * cell, range)]
+            });
+        }
 
         OverflowCheckTConfig {
             a,
@@ -168,18 +120,14 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
                     MAX_BITS as usize,
                 ) as Vec<Fp>;
 
-                println!("decomposed_values: {:?}", decomposed_values);
-
                 // Note that, decomposed result is little edian. So, we need to reverse it.
                 for (idx, val) in decomposed_values.iter().rev().enumerate() {
                     let _cell = region.assign_advice(
-                        || format!("assign decomposed[{}] row", idx),
+                        || format!("assign decomposed {} row", idx),
                         self.config.decomposed_values,
                         idx,
                         || Value::known(*val),
                     )?;
-
-                    println!("_cell: {:?}", _cell);
                 }
 
                 Ok(())
@@ -200,7 +148,6 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
                         i,
                         || Value::known(Fp::from(i as u64)),
                     )?;
-                    // println!("load cell: {:?}", _cell);
                 }
                 Ok(())
             },
