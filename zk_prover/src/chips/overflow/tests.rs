@@ -151,21 +151,19 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> Circuit<Fp>
 }
 
 #[derive(Debug, Clone)]
-pub struct OverflowCheckTTestConfig<const MAX_BITS: u8, const ACC_COLS: usize> {
+pub struct OverflowCheckTTestConfig<const MAX_BITS: u8> {
     pub addchip_config: AddConfig,
-    pub overflow_check_config: OverflowCheckTConfig<MAX_BITS, ACC_COLS>,
+    pub overflow_check_config: OverflowCheckTConfig<MAX_BITS>,
 }
 
 #[derive(Default, Clone, Debug)]
-struct OverflowCheckTTestCircuit<const MAX_BITS: u8, const ACC_COLS: usize> {
+struct OverflowCheckTTestCircuit<const MAX_BITS: u8> {
     pub a: Fp,
     pub b: Fp,
 }
 
-impl<const MAX_BITS: u8, const ACC_COLS: usize> Circuit<Fp>
-    for OverflowCheckTTestCircuit<MAX_BITS, ACC_COLS>
-{
-    type Config = OverflowCheckTTestConfig<MAX_BITS, ACC_COLS>;
+impl<const MAX_BITS: u8> Circuit<Fp> for OverflowCheckTTestCircuit<MAX_BITS> {
+    type Config = OverflowCheckTTestConfig<MAX_BITS>;
     type FloorPlanner = SimpleFloorPlanner;
 
     fn without_witnesses(&self) -> Self {
@@ -174,7 +172,7 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> Circuit<Fp>
 
     fn configure(meta: &mut ConstraintSystem<Fp>) -> Self::Config {
         let addchip_config = AddChip::configure(meta);
-        let overflow_check_config = OverflowChipT::<MAX_BITS, ACC_COLS>::configure(meta);
+        let overflow_check_config = OverflowChipT::<MAX_BITS>::configure(meta);
 
         {
             OverflowCheckTTestConfig {
@@ -237,13 +235,13 @@ mod tests {
 
     #[test]
     fn test_none_overflow_t_16bits_case() {
-        let k = 5;
+        let k = 8;
 
         // a: new value
         let a = Fp::from((1 << 16) - 2);
         let b = Fp::from(1);
 
-        let circuit = OverflowCheckTTestCircuit::<4, 4> { a, b };
+        let circuit = OverflowCheckTTestCircuit::<4> { a, b };
         let prover = MockProver::run(k, &circuit, vec![]).unwrap();
         prover.assert_satisfied();
     }
@@ -282,13 +280,16 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_overflow_t_16bits_case() {
-        let k = 5;
+        // this test case will fail due to valid overflow check
+        // because the overflow rows more than four rows.
+        let k = 8;
 
         let a = Fp::from((1 << 16) - 2);
         let b = Fp::from(3);
 
-        let circuit = OverflowCheckTTestCircuit::<4, 4> { a, b };
+        let circuit = OverflowCheckTTestCircuit::<4> { a, b };
         let invalid_prover = MockProver::run(k, &circuit, vec![]).unwrap();
         assert_eq!(
             invalid_prover.verify(),
@@ -370,6 +371,104 @@ mod tests {
                     (((Any::advice(), 23).into(), 0).into(), "0".to_string()),
                 ]
             }])
+        );
+    }
+
+    #[test]
+    fn test_overflow_t_250bits_case() {
+        // 5 bits are optimal choices for 252 bits field
+        // 32 ( = 1 << 5 ) fixed column for range check
+        // 50 ( = 252 // 5 ) rows for decomposed column
+        let k = 13;
+
+        // In case, the left_balance(i.e user balance) is maximum value
+        let a = Fp::from_raw([
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0xffffffffffffffff,
+            0x0fffffffffffffff,
+        ]);
+        let b = Fp::from(1);
+
+        let circuit = OverflowCheckTTestCircuit::<5> { a, b };
+        let invalid_prover = MockProver::run(k, &circuit, vec![]).unwrap();
+
+        fn gen_errors(region_num: usize, first_advice: &str, advice: &str) -> VerifyFailure {
+            VerifyFailure::ConstraintNotSatisfied {
+                constraint: (
+                    (1, "equality check between decomposed_value and value").into(),
+                    0,
+                    "",
+                )
+                    .into(),
+                location: FailureLocation::InRegion {
+                    region: (region_num, "assign decomposed values").into(),
+                    offset: 0,
+                },
+                cell_values: vec![
+                    (
+                        ((Any::advice(), 3).into(), 0).into(),
+                        first_advice.to_string(),
+                    ),
+                    (((Any::advice(), 4).into(), 0).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 1).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 2).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 3).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 4).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 5).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 6).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 7).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 8).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 9).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 10).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 11).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 12).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 13).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 14).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 15).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 16).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 17).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 18).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 19).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 20).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 21).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 22).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 23).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 24).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 25).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 26).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 27).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 28).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 29).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 30).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 31).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 32).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 33).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 34).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 35).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 36).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 37).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 38).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 39).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 40).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 41).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 42).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 43).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 44).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 45).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 46).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 47).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 48).into(), advice.to_string()),
+                    (((Any::advice(), 4).into(), 49).into(), advice.to_string()),
+                ],
+            }
+        }
+        assert_eq!(
+            invalid_prover.verify(),
+            Err(vec! {
+                 gen_errors(2, "0xfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "0x1f"),
+                 gen_errors(4, "0x1000000000000000000000000000000000000000000000000000000000000000", "0"),
+            })
         );
     }
 

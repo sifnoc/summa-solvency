@@ -4,8 +4,10 @@ use halo2_proofs::halo2curves::bn256::Fr as Fp;
 use halo2_proofs::{circuit::*, plonk::*, poly::Rotation};
 use std::fmt::Debug;
 
+const MOD_BITS: usize = 252;
+
 #[derive(Debug, Clone)]
-pub struct OverflowCheckTConfig<const MAX_BITS: u8, const ACC_COLS: usize> {
+pub struct OverflowCheckTConfig<const MAX_BITS: u8> {
     pub a: Column<Advice>,
     pub decomposed_values: Column<Advice>,
     pub range: Column<Fixed>,
@@ -13,21 +15,23 @@ pub struct OverflowCheckTConfig<const MAX_BITS: u8, const ACC_COLS: usize> {
 }
 
 #[derive(Debug, Clone)]
-pub struct OverflowChipT<const MAX_BITS: u8, const ACC_COLS: usize> {
-    config: OverflowCheckTConfig<MAX_BITS, ACC_COLS>,
+pub struct OverflowChipT<const MAX_BITS: u8> {
+    config: OverflowCheckTConfig<MAX_BITS>,
 }
 
-impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS> {
-    pub fn construct(config: OverflowCheckTConfig<MAX_BITS, ACC_COLS>) -> Self {
+impl<const MAX_BITS: u8> OverflowChipT<MAX_BITS> {
+    pub fn construct(config: OverflowCheckTConfig<MAX_BITS>) -> Self {
         Self { config }
     }
 
-    pub fn configure(meta: &mut ConstraintSystem<Fp>) -> OverflowCheckTConfig<MAX_BITS, ACC_COLS> {
+    pub fn configure(meta: &mut ConstraintSystem<Fp>) -> OverflowCheckTConfig<MAX_BITS> {
         let selector = meta.selector();
         let range = meta.fixed_column();
         let a = meta.advice_column();
         let b = meta.advice_column();
         let toggle_overflow_check = meta.complex_selector();
+
+        let num_rows = MOD_BITS / MAX_BITS as usize;
 
         meta.create_gate(
             "equality check between decomposed_value and value",
@@ -36,7 +40,7 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
 
                 let value = meta.query_advice(a, Rotation::cur());
 
-                let decomposed_value_vec: Vec<Expression<Fp>> = (0..ACC_COLS)
+                let decomposed_value_vec: Vec<Expression<Fp>> = (0..num_rows)
                     .map(|i| meta.query_advice(b, Rotation(i as i32)))
                     .collect();
 
@@ -67,11 +71,11 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
                 // During the iteration process in fold, the following would be the values of `acc`:
                 // iteration 0: acc = decomposed_value_vec[1] * ( 1 << 8 ) + decomposed_value_vec[2]
                 // iteration 1: acc = decomposed_value_vec[0] * ( 1 << 16 ) + decomposed_value_vec[1] * ( 1 << 8 ) + decomposed_value_vec[2]
-                let decomposed_value_sum = (0..=ACC_COLS - 2).fold(
+                let decomposed_value_sum = (0..=num_rows - 2).fold(
                     // decomposed value at right-most advice columnis is least significant byte
-                    decomposed_value_vec[ACC_COLS - 1].clone(),
+                    decomposed_value_vec[num_rows - 1].clone(),
                     |acc, i| {
-                        let cursor = ACC_COLS - i;
+                        let cursor = num_rows - i;
                         acc + (decomposed_value_vec[i].clone() * multiplier(cursor))
                     },
                 );
@@ -82,7 +86,7 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
 
         meta.annotate_lookup_any_column(range, || "LOOKUP_MAXBITS_RANGE");
 
-        for i in 2..ACC_COLS {
+        for i in 2..num_rows {
             meta.lookup_any("range check for MAXBITS", |meta| {
                 let cell = meta.query_advice(b, Rotation(i as i32));
                 let range = meta.query_fixed(range, Rotation::cur());
@@ -110,13 +114,15 @@ impl<const MAX_BITS: u8, const ACC_COLS: usize> OverflowChipT<MAX_BITS, ACC_COLS
                 // enable selector
                 self.config.selector.enable(&mut region, 0)?;
 
+                let num_rows = MOD_BITS / MAX_BITS as usize;
+
                 // Assign input value to the cell inside the region
                 let _ = value.copy_advice(|| "assign value", &mut region, self.config.a, 0);
 
                 // Just used helper function for decomposing. In other halo2 application used functions based on Field.
                 let decomposed_values: Vec<Fp> = decompose_bigint_to_ubits(
                     &value_fp_to_big_uint(value.value().map(|x| x.to_owned())),
-                    ACC_COLS,
+                    num_rows,
                     MAX_BITS as usize,
                 ) as Vec<Fp>;
 
