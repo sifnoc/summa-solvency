@@ -8,8 +8,7 @@ use halo2_proofs::halo2curves::bn256::Fr as Fp;
 use halo2_proofs::plonk::{Advice, Circuit, Column, ConstraintSystem, Error, Instance};
 use snark_verifier_sdk::CircuitExt;
 
-const ACC_COLS: usize = 5;
-const MAX_BITS: u8 = 8;
+const MAX_BITS: u8 = 5;
 const WIDTH: usize = 7;
 const RATE: usize = 6;
 
@@ -83,7 +82,7 @@ impl<const LEVELS: usize, const L: usize, const N_ASSETS: usize>
 pub struct MstInclusionConfig<const L: usize, const N_ASSETS: usize> {
     pub merkle_sum_tree_config: MerkleSumTreeConfig,
     pub poseidon_config: PoseidonConfig<WIDTH, RATE, L>,
-    pub overflow_check_config: OverflowCheckConfig<MAX_BITS, ACC_COLS>,
+    pub overflow_check_config: OverflowCheckConfig<MAX_BITS>,
     pub instance: Column<Instance>,
 }
 
@@ -103,13 +102,10 @@ impl<const L: usize, const N_ASSETS: usize> MstInclusionConfig<L, N_ASSETS> {
         let merkle_sum_tree_config =
             MerkleSumTreeChip::<N_ASSETS>::configure(meta, advices[0..3].try_into().unwrap());
 
-        assert!(ACC_COLS <= advices.len());
+        // assert!(ACC_COLS <= advices.len());
 
-        let overflow_check_config = OverflowChip::<MAX_BITS, ACC_COLS>::configure(
-            meta,
-            advices[0..ACC_COLS].try_into().unwrap(),
-            advices[ACC_COLS + 1],
-        );
+        let overflow_check_config =
+            OverflowChip::<MAX_BITS>::configure(meta, advices[0].try_into().unwrap(), advices[1]);
 
         let instance = meta.instance_column();
         meta.enable_equality(instance);
