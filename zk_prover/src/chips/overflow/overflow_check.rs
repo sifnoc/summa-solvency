@@ -9,9 +9,9 @@ const MOD_BITS: usize = 252;
 #[derive(Debug, Clone)]
 pub struct OverflowCheckConfig<const MAX_BITS: u8> {
     pub a: Column<Advice>,
-    pub decomposed_values: Column<Advice>,
+    pub b: Column<Advice>,
     pub range: Column<Fixed>,
-    pub selector: Selector,
+    pub toggle_overflow_check: Selector,
 }
 
 #[derive(Debug, Clone)]
@@ -29,10 +29,7 @@ impl<const MAX_BITS: u8> OverflowChip<MAX_BITS> {
         a: Column<Advice>,
         b: Column<Advice>,
     ) -> OverflowCheckConfig<MAX_BITS> {
-        let selector = meta.selector();
         let range = meta.fixed_column();
-        // let a = meta.advice_column();
-        // let b = meta.advice_column();
         let toggle_overflow_check = meta.complex_selector();
 
         let num_rows = MOD_BITS / MAX_BITS as usize;
@@ -40,7 +37,7 @@ impl<const MAX_BITS: u8> OverflowChip<MAX_BITS> {
         meta.create_gate(
             "equality check between decomposed_value and value",
             |meta| {
-                let s_doc = meta.query_selector(selector);
+                let s_doc = meta.query_selector(toggle_overflow_check);
 
                 let value = meta.query_advice(a, Rotation::cur());
 
@@ -48,8 +45,7 @@ impl<const MAX_BITS: u8> OverflowChip<MAX_BITS> {
                     .map(|i| meta.query_advice(b, Rotation(i as i32)))
                     .collect();
 
-                // multiplier by position of accumulator column
-                // e.g. for ACC_COLS = 3, multiplier = [2^(2*MAX_BITS), 2^MAX_BITS, 1]
+                // multiplier by position of `b`(decomposed_value) column
                 let multiplier = |pos: usize| {
                     let mut shift_chunk = Fp::one();
                     for _ in 1..pos {
@@ -63,7 +59,7 @@ impl<const MAX_BITS: u8> OverflowChip<MAX_BITS> {
                 //
                 // Consider the example where ACC_COLS = 3, the decomposed values would be represented as follows:
                 //
-                // |     | a_0 (value) | b    |
+                // |     | a (value)   | b    |
                 // |-----|-------------|------|
                 // |  x  | 0x1f2f3f    | 0x1f |
                 // | x+1 |             | 0x2f |
@@ -101,9 +97,9 @@ impl<const MAX_BITS: u8> OverflowChip<MAX_BITS> {
 
         OverflowCheckConfig {
             a,
-            decomposed_values: b,
+            b,
             range,
-            selector,
+            toggle_overflow_check,
         }
     }
 
@@ -116,12 +112,12 @@ impl<const MAX_BITS: u8> OverflowChip<MAX_BITS> {
             || "assign decomposed values",
             |mut region| {
                 // enable selector
-                self.config.selector.enable(&mut region, 0)?;
+                self.config.toggle_overflow_check.enable(&mut region, 0)?;
 
                 let num_rows = MOD_BITS / MAX_BITS as usize;
 
                 // Assign input value to the cell inside the region
-                let _ = value.copy_advice(|| "assign value", &mut region, self.config.a, 0);
+                value.copy_advice(|| "assign value", &mut region, self.config.a, 0)?;
 
                 // Just used helper function for decomposing. In other halo2 application used functions based on Field.
                 let decomposed_values: Vec<Fp> = decompose_bigint_to_ubits(
@@ -134,7 +130,7 @@ impl<const MAX_BITS: u8> OverflowChip<MAX_BITS> {
                 for (idx, val) in decomposed_values.iter().rev().enumerate() {
                     let _cell = region.assign_advice(
                         || format!("assign decomposed {} row", idx),
-                        self.config.decomposed_values,
+                        self.config.b,
                         idx,
                         || Value::known(*val),
                     )?;

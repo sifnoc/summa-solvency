@@ -8,7 +8,7 @@ use halo2_proofs::halo2curves::bn256::Fr as Fp;
 use halo2_proofs::plonk::{Advice, Circuit, Column, ConstraintSystem, Error, Instance};
 use snark_verifier_sdk::CircuitExt;
 
-const MAX_BITS: u8 = 5;
+const MAX_BITS: u8 = 10;
 const WIDTH: usize = 7;
 const RATE: usize = 6;
 
