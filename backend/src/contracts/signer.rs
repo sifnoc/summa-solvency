@@ -17,7 +17,7 @@ use super::generated::summa_contract::{AddressOwnershipProof, Asset};
 
 #[derive(Debug)]
 pub struct SummaSigner {
-    signing_wallets: Vec<LocalWallet>,
+    // signing_wallets: Vec<LocalWallet>,
     summa_contract: Summa<SignerMiddleware<Provider<Http>, LocalWallet>>,
 }
 
@@ -48,10 +48,10 @@ impl SummaSigner {
 
         let contract = Summa::new(address, client);
         Self {
-            signing_wallets: private_keys
-                .iter()
-                .map(|private_key| LocalWallet::from_str(private_key).unwrap())
-                .collect(),
+            // signing_wallets: private_keys
+            //     .iter()
+            //     .map(|private_key| LocalWallet::from_str(private_key).unwrap())
+            //     .collect(),
             summa_contract: contract,
         }
     }
@@ -80,22 +80,22 @@ impl SummaSigner {
         Ok(address)
     }
 
-    async fn sign_message(wallet: &LocalWallet, message: &str) -> Signature {
-        let encoded_message = encode(&[Token::String(message.to_owned())]);
-        let hashed_message = keccak256(encoded_message);
-        wallet.sign_message(hashed_message).await.unwrap()
-    }
+    // async fn sign_message(wallet: &LocalWallet, message: &str) -> Signature {
+    //     let encoded_message = encode(&[Token::String(message.to_owned())]);
+    //     let hashed_message = keccak256(encoded_message);
+    //     wallet.sign_message(hashed_message).await.unwrap()
+    // }
 
-    pub async fn generate_signatures(&self) -> Result<Vec<Signature>, WalletError> {
-        let message = std::env::var("SIGNATURE_VERIFICATION_MESSAGE").unwrap();
-        let signature_futures: Vec<_> = self
-            .signing_wallets
-            .iter()
-            .map(|wallet| Self::sign_message(wallet, &message))
-            .collect();
+    // pub async fn generate_signatures(&self) -> Result<Vec<Signature>, WalletError> {
+    //     let message = std::env::var("SIGNATURE_VERIFICATION_MESSAGE").unwrap();
+    //     let signature_futures: Vec<_> = self
+    //         .signing_wallets
+    //         .iter()
+    //         .map(|wallet| Self::sign_message(wallet, &message))
+    //         .collect();
 
-        Ok(join_all(signature_futures).await)
-    }
+    //     Ok(join_all(signature_futures).await)
+    // }
 
     pub async fn submit_proof_of_address_ownership(
         &self,

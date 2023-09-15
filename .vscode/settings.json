@@ -4,4 +4,7 @@
     "editor.formatOnSave": true,
     "editor.formatOnSaveMode": "file"
   },
+  "rust-analyzer.linkedProjects": [
+    "./backend/Cargo.toml"
+  ],
 }

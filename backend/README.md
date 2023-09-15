@@ -87,3 +87,26 @@ On successful execution, you'll observe a message indicating the verification ou
 ```
 Verifying the proof result for User #0: true
 ```
+
+### Generating Message Signatures with a Remote Signer
+
+This example provides insights into how you can generate message signatures using `a remote signer server.`
+The `generate_signatures/main.rs` example creates a local server that mimics the behavior of a CEX signing server.
+
+It can be use variate situation, for example, you can compile this example as excutable binary. And a Operator can run with hardware wallet inside high-security section of CEX that disconnected on line 
+take a signature file in 
+
+The main program sends a request to this server to sign a specific message.
+Upon receiving the signature, the main program then saves the signatures to a CSV file.
+
+Key components to note:
+- The main file (`generate_signatures/main.rs`) initializes the signer server and sends a request to sign the given message.
+- The `remote_signer.rs` defines the logic for the signing server, including handling incoming requests and signing the messages using predefined private keys.
+- Signatures and related data are stored as `SignatureRecord` and can be parsed using functionalities provided by `csv_parser.rs`.
+
+It's essential to know that the `remote_signer` is configured to work correctly with the specific message "Summa proof of solvency for CryptoExchange" due to the buffer length constraints. Altering the length of the message could lead to issues in generating accurate signatures.
+
+To run the example:
+```
+cargo run --example generate_signatures
+```

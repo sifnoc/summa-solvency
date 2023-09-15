@@ -18,6 +18,7 @@ use ethers::{
 use serde_json::{from_str, to_string_pretty};
 
 mod remote_signer;
+// mod local_signer;
 use remote_signer::start_server;
 use summa_backend::apis::csv_parser::SignatureRecord;
 

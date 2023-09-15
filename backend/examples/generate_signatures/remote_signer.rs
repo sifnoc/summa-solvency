@@ -23,8 +23,14 @@ async fn remote_signer(mut stream: TcpStream) {
     let mut buffer = [0; 85];
     let bytes_read = stream.read(&mut buffer).unwrap();
 
-    // This is insecure way to create wallet instances
-    // TODO: suggest better secure way to generate wallet instances
+    // NOTE: Using private keys directly is insecure.
+    // Instead, consider leveraging hardware wallet support.
+    // `ethers-rs` provides support for both Ledger and Trezor hardware wallets.
+    //
+    // For example, you could use the Ledger wallet as shown below:
+    // let signing_wallets = (0..2).map(|index| Ledger::new(HDPath::LedgerLive(index), 1).await.unwrap()).collect();
+    //
+    // Refers to: https://docs.rs/ethers/latest/ethers/signers/index.html
     let private_keys = &[
         "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
         "0xde9be858da4a475276426320d5e9262ecfc3ba460bfac56360bfa6c4c28b4ee0",
@@ -81,7 +87,7 @@ fn handle_client(stream: TcpStream) {
 
 pub fn start_server() {
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
-    println!("Example Signer server started on 127.0.0.1:8080");
+    println!("Example signer server started on 127.0.0.1:8080");
 
     for stream in listener.incoming() {
         match stream {
