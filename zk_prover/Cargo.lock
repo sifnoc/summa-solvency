@@ -4693,6 +4693,7 @@ dependencies = [
  "snark-verifier",
  "snark-verifier-sdk",
  "tabbycat",
+ "wasm-bindgen",
 ]
 
 [[package]]

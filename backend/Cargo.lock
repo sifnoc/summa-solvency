@@ -3387,6 +3387,7 @@ dependencies = [
  "serde",
  "snark-verifier",
  "snark-verifier-sdk",
+ "wasm-bindgen",
 ]
 
 [[package]]
