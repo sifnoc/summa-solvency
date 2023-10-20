@@ -40,7 +40,7 @@ where
     build_leaves_level(entries, &mut tree);
 
     for level in 1..=depth {
-        build_middle_level(level, &mut tree, n)
+        build_middle_level(level, &mut tree)
     }
 
     let root = tree[depth][0].clone();
@@ -59,33 +59,31 @@ fn build_leaves_level<const N_ASSETS: usize>(
         .map(|entry| entry.compute_leaf())
         .collect::<Vec<_>>();
 
-    for (index, node) in results.into_iter().enumerate() {
-        tree[0][index] = node;
+    // // TODO: parallelize this
+    for (index, node) in results.iter().enumerate() {
+        tree[0][index] = node.clone();
     }
 }
 
-fn build_middle_level<const N_ASSETS: usize>(
-    level: usize,
-    tree: &mut [Vec<Node<N_ASSETS>>],
-    n: usize,
-) where
+fn build_middle_level<const N_ASSETS: usize>(level: usize, tree: &mut [Vec<Node<N_ASSETS>>])
+where
     [usize; 2 * (1 + N_ASSETS)]: Sized,
 {
-    let nodes_in_level = (n + (1 << level) - 1) / (1 << level);
-
-    let results: Vec<_> = tree[level - 1]
-        .iter()
-        .enumerate()
-        .filter_map(|(index, node)| {
-            if index % 2 == 0 && index + 1 < nodes_in_level {
-                Some(create_middle_node(node, &tree[level - 1][index + 1]))
+    let results: Vec<Node<N_ASSETS>> = (0..tree[level - 1].len())
+        .into_par_iter()
+        .filter_map(|index| {
+            if index % 2 == 0 {
+                Some(create_middle_node(
+                    &tree[level - 1][index],
+                    &tree[level - 1][index + 1],
+                ))
             } else {
                 None
             }
         })
-        .par_bridge() // Convert the standard iterator to a parallel iterator
         .collect();
 
+    // TODO: parallelize this
     for (index, new_node) in results.into_iter().enumerate() {
         tree[level][index] = new_node;
     }
