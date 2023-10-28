@@ -1,4 +1,5 @@
 #![feature(generic_const_exprs)]
+use const_env::from_env;
 use criterion::{criterion_group, criterion_main, Criterion};
 use halo2_proofs::{
     halo2curves::bn256::Fr as Fp,
@@ -14,18 +15,21 @@ use summa_solvency::{
     merkle_sum_tree::MerkleSumTree,
 };
 
+#[from_env]
 const SAMPLE_SIZE: usize = 10;
+#[from_env]
 const LEVELS: usize = 15;
+#[from_env]
 const N_ASSETS: usize = 1;
-const PATH_NAME: &str = "one_asset";
+#[from_env]
 const N_BYTES: usize = 14;
 
 fn build_mstree(_c: &mut Criterion) {
     let mut criterion = Criterion::default().sample_size(SAMPLE_SIZE);
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_ASSETS, N_ASSETS, LEVELS
     );
 
     let bench_name = format!(
@@ -44,8 +48,8 @@ fn build_sorted_mstree(_c: &mut Criterion) {
     let mut criterion = Criterion::default().sample_size(SAMPLE_SIZE);
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_ASSETS, N_ASSETS, LEVELS
     );
 
     let bench_name = format!(
@@ -104,8 +108,8 @@ fn generate_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
     let (params, pk, vk) = generate_setup_artifacts(13, None, empty_circuit).unwrap();
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_ASSETS, N_ASSETS, LEVELS
     );
 
     let merkle_sum_tree = MerkleSumTree::<N_ASSETS, N_BYTES>::new(&csv_file).unwrap();
@@ -132,8 +136,8 @@ fn verify_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
     let (params, pk, vk) = generate_setup_artifacts(13, None, empty_circuit).unwrap();
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_ASSETS, N_ASSETS, LEVELS
     );
 
     let merkle_sum_tree = MerkleSumTree::<N_ASSETS, N_BYTES>::new(&csv_file).unwrap();
@@ -200,8 +204,8 @@ fn generate_zk_proof_solvency_circuit(_c: &mut Criterion) {
     let (params, pk, vk) = generate_setup_artifacts(11, None, empty_circuit).unwrap();
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_ASSETS, N_ASSETS, LEVELS
     );
 
     let merkle_sum_tree = MerkleSumTree::<N_ASSETS, N_BYTES>::new(&csv_file).unwrap();
@@ -230,8 +234,8 @@ fn verify_zk_proof_solvency_circuit(_c: &mut Criterion) {
     let (params, pk, vk) = generate_setup_artifacts(11, None, empty_circuit).unwrap();
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_ASSETS, N_ASSETS, LEVELS
     );
 
     let merkle_sum_tree = MerkleSumTree::<N_ASSETS, N_BYTES>::new(&csv_file).unwrap();
