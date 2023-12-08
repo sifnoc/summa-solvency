@@ -2,6 +2,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use halo2_proofs::plonk::{keygen_pk, keygen_vk};
 use snark_verifier_sdk::CircuitExt;
+use std::time::Instant;
 use summa_solvency::{
     circuits::merkle_sum_tree::MstInclusionCircuit,
     circuits::utils::{full_prover, full_verifier, generate_setup_artifacts},
@@ -9,17 +10,16 @@ use summa_solvency::{
 };
 
 const SAMPLE_SIZE: usize = 10;
-const LEVELS: usize = 20;
+const LEVELS: usize = 17;
 const N_CURRENCIES: usize = 1;
-const PATH_NAME: &str = "one_asset";
 const N_BYTES: usize = 14;
 
 fn build_mstree(_c: &mut Criterion) {
     let mut criterion = Criterion::default().sample_size(SAMPLE_SIZE);
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_CURRENCIES, N_CURRENCIES, LEVELS
     );
 
     let bench_name = format!(
@@ -38,8 +38,8 @@ fn build_sorted_mstree(_c: &mut Criterion) {
     let mut criterion = Criterion::default().sample_size(SAMPLE_SIZE);
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_CURRENCIES, N_CURRENCIES, LEVELS
     );
 
     let bench_name = format!(
@@ -98,11 +98,14 @@ fn generate_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
     let (params, pk, _) = generate_setup_artifacts(13, None, empty_circuit).unwrap();
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_CURRENCIES, N_CURRENCIES, LEVELS
     );
 
+    let start = Instant::now(); // Start timer
     let merkle_sum_tree = MerkleSumTree::<N_CURRENCIES, N_BYTES>::new(&csv_file).unwrap();
+    let duration = start.elapsed(); // Stop timer
+    println!("Time taken for MerkleSumTree::new: {:?}", duration);
 
     // Only now we can instantiate the circuit with the actual inputs
 
@@ -131,11 +134,14 @@ fn verify_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
     let (params, pk, vk) = generate_setup_artifacts(13, None, empty_circuit).unwrap();
 
     let csv_file = format!(
-        "benches/csv/{}/{}_entry_2_{}.csv",
-        PATH_NAME, PATH_NAME, LEVELS
+        "benches/csv/{}_asset/{}_entry_2_{}.csv",
+        N_CURRENCIES, N_CURRENCIES, LEVELS
     );
 
+    let start = Instant::now(); // Start timer
     let merkle_sum_tree = MerkleSumTree::<N_CURRENCIES, N_BYTES>::new(&csv_file).unwrap();
+    let duration = start.elapsed(); // Stop timer
+    println!("Time taken for MerkleSumTree::new: {:?}", duration);
 
     // Only now we can instantiate the circuit with the actual inputs
 
@@ -162,8 +168,8 @@ fn verify_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    build_mstree,
-    build_sorted_mstree,
+    // build_mstree,
+    // build_sorted_mstree,
     verification_key_gen_mst_inclusion_circuit,
     proving_key_gen_mst_inclusion_circuit,
     generate_zk_proof_mst_inclusion_circuit,
