@@ -1,4 +1,5 @@
 #![feature(generic_const_exprs)]
+use const_env::from_env;
 use criterion::{criterion_group, criterion_main, Criterion};
 use halo2_proofs::plonk::{keygen_pk, keygen_vk};
 use snark_verifier_sdk::CircuitExt;
@@ -9,9 +10,13 @@ use summa_solvency::{
     merkle_sum_tree::{MerkleSumTree, Tree},
 };
 
+#[from_env]
 const SAMPLE_SIZE: usize = 10;
+#[from_env]
 const LEVELS: usize = 17;
+#[from_env]
 const N_CURRENCIES: usize = 1;
+#[from_env]
 const N_BYTES: usize = 14;
 
 fn build_mstree(_c: &mut Criterion) {
