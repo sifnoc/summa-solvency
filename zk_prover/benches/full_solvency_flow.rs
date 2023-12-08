@@ -22,10 +22,7 @@ const N_BYTES: usize = 14;
 fn build_mstree(_c: &mut Criterion) {
     let mut criterion = Criterion::default().sample_size(SAMPLE_SIZE);
 
-    let csv_file = format!(
-        "benches/csv/{}_asset/{}_entry_2_{}.csv",
-        N_CURRENCIES, N_CURRENCIES, LEVELS
-    );
+    let csv_file = format!("benches/csv/{}_entry_2_{}.csv", N_CURRENCIES, LEVELS);
 
     let bench_name = format!(
         "build Merkle sum tree for 2 power of {} entries with {} currencies",
@@ -42,10 +39,7 @@ fn build_mstree(_c: &mut Criterion) {
 fn build_sorted_mstree(_c: &mut Criterion) {
     let mut criterion = Criterion::default().sample_size(SAMPLE_SIZE);
 
-    let csv_file = format!(
-        "benches/csv/{}_asset/{}_entry_2_{}.csv",
-        N_CURRENCIES, N_CURRENCIES, LEVELS
-    );
+    let csv_file = format!("benches/csv/{}_entry_2_{}.csv", N_CURRENCIES, LEVELS);
 
     let bench_name = format!(
         "build sorted Merkle sum tree for 2 power of {} entries with {} currencies",
@@ -102,10 +96,7 @@ fn generate_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
 
     let (params, pk, _) = generate_setup_artifacts(13, None, empty_circuit).unwrap();
 
-    let csv_file = format!(
-        "benches/csv/{}_asset/{}_entry_2_{}.csv",
-        N_CURRENCIES, N_CURRENCIES, LEVELS
-    );
+    let csv_file = format!("benches/csv/{}_entry_2_{}.csv", N_CURRENCIES, LEVELS);
 
     let start = Instant::now(); // Start timer
     let merkle_sum_tree = MerkleSumTree::<N_CURRENCIES, N_BYTES>::new(&csv_file).unwrap();
@@ -138,10 +129,7 @@ fn verify_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
 
     let (params, pk, vk) = generate_setup_artifacts(13, None, empty_circuit).unwrap();
 
-    let csv_file = format!(
-        "benches/csv/{}_asset/{}_entry_2_{}.csv",
-        N_CURRENCIES, N_CURRENCIES, LEVELS
-    );
+    let csv_file = format!("benches/csv/{}_entry_2_{}.csv", N_CURRENCIES, LEVELS);
 
     let start = Instant::now(); // Start timer
     let merkle_sum_tree = MerkleSumTree::<N_CURRENCIES, N_BYTES>::new(&csv_file).unwrap();
