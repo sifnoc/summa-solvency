@@ -1,6 +1,8 @@
-name: benchmark
+name: Benchmark
 
 on:
+  push:
+    branches: ["*"]
   workflow_dispatch:
     inputs:
       run_benchmark:
@@ -14,6 +16,8 @@ jobs:
 
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_benchmark == 'yes' }}
     steps:
+      - uses: actions/checkout@v3
+
       - name: Run Benchmark Tests
         run: |
           cd kzg_prover
