@@ -14,7 +14,7 @@ on:
 
 jobs:
   benchmark:
-    runs-on: ubuntu-latest
+    runs-on: [summa-solvency-bench-runner]
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_benchmark == 'yes' }}
     steps:
       - uses: actions/checkout@v3
@@ -23,7 +23,7 @@ jobs:
         run: |
           cd kzg_prover
           cargo bench
-          
+
       - name: Upload Benchmark Results
         uses: actions/upload-artifact@v2
         with:
