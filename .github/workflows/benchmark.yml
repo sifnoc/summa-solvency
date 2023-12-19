@@ -9,8 +9,19 @@ on:
         default: 'no'
 
 jobs:
+  test:
+    runs-on: [summa-solvency-bench-runner]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Tests
+        run: |
+          cd kzg_prover
+          cargo test
+
   benchmark:
     runs-on: [summa-solvency-bench-runner]
+    needs: [test]
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_benchmark == 'yes' }}
     steps:
       - uses: actions/checkout@v3
