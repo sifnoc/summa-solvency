@@ -1,6 +1,10 @@
-name: benchmark
+name: Benchmark
 
 on:
+  push:
+    branches: ["*"]
+  pull_request:
+    branches: ["*"]  
   workflow_dispatch:
     inputs:
       run_benchmark:
@@ -8,17 +12,9 @@ on:
         required: true
         default: 'no'
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-    
     if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.run_benchmark == 'yes' }}
     steps:
       - uses: actions/checkout@v3
