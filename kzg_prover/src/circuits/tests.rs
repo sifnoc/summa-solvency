@@ -15,13 +15,13 @@ mod test {
     use halo2_proofs::poly::kzg::commitment::ParamsKZG;
     use num_bigint::BigUint;
 
-    const K: u32 = 17;
-    const N_CURRENCIES: usize = 2;
-    const N_USERS: usize = 16;
+    const K: u32 = 9;
+    const N_CURRENCIES: usize = 1;
+    const N_USERS: usize = 506;
 
     #[test]
     fn test_valid_univariate_grand_sum_prover() {
-        let path = "../csv/entry_16.csv";
+        let path = "../csv/1_entry_16.csv";
 
         let mut entries: Vec<Entry<N_CURRENCIES>> = vec![Entry::init_empty(); N_USERS];
         let mut cryptos = vec![Cryptocurrency::init_empty(); N_CURRENCIES];
