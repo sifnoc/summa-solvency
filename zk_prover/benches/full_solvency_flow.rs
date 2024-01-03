@@ -8,15 +8,16 @@ use summa_solvency::{
     merkle_sum_tree::{MerkleSumTree, Tree},
 };
 
-const SAMPLE_SIZE: usize = 10;
-const LEVELS: usize = 20;
+const SAMPLE_SIZE: usize = 100;
+const LEVELS: usize = 9;
 const N_CURRENCIES: usize = 1;
-const N_BYTES: usize = 14;
+const N_USERS: usize = 506;
+const N_BYTES: usize = 8;
 
 fn build_mstree(_c: &mut Criterion) {
     let mut criterion = Criterion::default().sample_size(SAMPLE_SIZE);
 
-    let csv_file = format!("benches/csv/{}_entry_2_{}.csv", N_CURRENCIES, LEVELS);
+    let csv_file = format!("../csv/{}_entry_{}.csv", N_CURRENCIES, N_USERS);
 
     let bench_name = format!(
         "build Merkle sum tree for 2 power of {} entries with {} currencies",
@@ -33,7 +34,7 @@ fn build_mstree(_c: &mut Criterion) {
 fn build_sorted_mstree(_c: &mut Criterion) {
     let mut criterion = Criterion::default().sample_size(SAMPLE_SIZE);
 
-    let csv_file = format!("benches/csv/{}_entry_2_{}.csv", N_CURRENCIES, LEVELS);
+    let csv_file = format!("../csv/{}_entry_{}.csv", N_CURRENCIES, N_USERS);
 
     let bench_name = format!(
         "build sorted Merkle sum tree for 2 power of {} entries with {} currencies",
@@ -90,8 +91,8 @@ fn generate_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
 
     let (params, pk, _) = generate_setup_artifacts(13, None, empty_circuit).unwrap();
 
-    let csv_file = format!("benches/csv/{}_entry_2_{}.csv", N_CURRENCIES, LEVELS);
-
+    let csv_file = format!("../csv/{}_entry_{}.csv", N_CURRENCIES, N_USERS);
+    println!("csv file: {}", csv_file);
     let merkle_sum_tree = MerkleSumTree::<N_CURRENCIES, N_BYTES>::from_csv(&csv_file).unwrap();
 
     // Only now we can instantiate the circuit with the actual inputs
@@ -120,7 +121,7 @@ fn verify_zk_proof_mst_inclusion_circuit(_c: &mut Criterion) {
 
     let (params, pk, vk) = generate_setup_artifacts(13, None, empty_circuit).unwrap();
 
-    let csv_file = format!("benches/csv/{}_entry_2_{}.csv", N_CURRENCIES, LEVELS);
+    let csv_file = format!("../csv/{}_entry_{}.csv", N_CURRENCIES, N_USERS);
 
     let merkle_sum_tree = MerkleSumTree::<N_CURRENCIES, N_BYTES>::from_csv(&csv_file).unwrap();
 

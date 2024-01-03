@@ -127,7 +127,7 @@ where
     merkle_sum_tree_config: MerkleSumTreeConfig,
     poseidon_entry_config: PoseidonConfig<2, 1, { N_CURRENCIES + 1 }>,
     poseidon_middle_config: PoseidonConfig<2, 1, { N_CURRENCIES + 2 }>,
-    range_check_config: RangeCheckConfig<N_BYTES>,
+    // range_check_config: RangeCheckConfig<N_BYTES>,
     instance: Column<Instance>,
     advices: [Column<Advice>; 3],
     fixed_columns: [Column<Fixed>; 5],
@@ -185,12 +185,12 @@ where
             selectors[0..2].try_into().unwrap(),
         );
 
-        let range_check_config = RangeCheckChip::<N_BYTES>::configure(
-            meta,
-            advices[0],
-            fixed_columns[4],
-            enable_lookup_selector,
-        );
+        // let range_check_config = RangeCheckChip::<N_BYTES>::configure(
+        //     meta,
+        //     advices[0],
+        //     fixed_columns[4],
+        //     enable_lookup_selector,
+        // );
 
         let instance = meta.instance_column();
         meta.enable_equality(instance);
@@ -199,7 +199,7 @@ where
             merkle_sum_tree_config,
             poseidon_entry_config,
             poseidon_middle_config,
-            range_check_config,
+            // range_check_config,
             instance,
             advices,
             fixed_columns,
@@ -244,7 +244,7 @@ where
                 config.poseidon_middle_config,
             );
 
-        let range_check_chip = RangeCheckChip::<N_BYTES>::construct(config.range_check_config);
+        // let range_check_chip = RangeCheckChip::<N_BYTES>::construct(config.range_check_config);
 
         // Assign the entry username to the witness
         let username = self.assign_value_to_witness(
@@ -345,28 +345,28 @@ where
                     sibling_hasher_input,
                 )?;
 
-                // For level 0, perform range check on the leaf node balances and on the sibling node balances
-                for currency in 0..N_CURRENCIES {
-                    // Each balance cell is constrained to be within the range defined by N_BYTES
-                    range_check_chip.assign(
-                        layouter.namespace(|| {
-                            format!(
-                                "{}: currency {}: range check leaf balance",
-                                namespace_prefix, currency
-                            )
-                        }),
-                        &current_balances[currency],
-                    )?;
-                    range_check_chip.assign(
-                        layouter.namespace(|| {
-                            format!(
-                                "{}: currency {}: range check sibling balance",
-                                namespace_prefix, currency
-                            )
-                        }),
-                        &sibling_balances[currency],
-                    )?;
-                }
+                // // For level 0, perform range check on the leaf node balances and on the sibling node balances
+                // for currency in 0..N_CURRENCIES {
+                //     // Each balance cell is constrained to be within the range defined by N_BYTES
+                //     range_check_chip.assign(
+                //         layouter.namespace(|| {
+                //             format!(
+                //                 "{}: currency {}: range check leaf balance",
+                //                 namespace_prefix, currency
+                //             )
+                //         }),
+                //         &current_balances[currency],
+                //     )?;
+                //     range_check_chip.assign(
+                //         layouter.namespace(|| {
+                //             format!(
+                //                 "{}: currency {}: range check sibling balance",
+                //                 namespace_prefix, currency
+                //             )
+                //         }),
+                //         &sibling_balances[currency],
+                //     )?;
+                // }
 
                 sibling_hash = computed_sibling_hash;
             }
@@ -421,19 +421,19 @@ where
                     sibling_hasher_input,
                 )?;
 
-                // For other levels, only perform range on the sibling node balances. Any risk of overflow of the `current_balances` will be checked during verification
-                for currency in 0..N_CURRENCIES {
-                    // Each balance cell is constrained to be within the range defined by N_BYTES
-                    range_check_chip.assign(
-                        layouter.namespace(|| {
-                            format!(
-                                "{}: currency {}: range check sibling balance",
-                                namespace_prefix, currency
-                            )
-                        }),
-                        &sibling_balances[currency],
-                    )?;
-                }
+                // // For other levels, only perform range on the sibling node balances. Any risk of overflow of the `current_balances` will be checked during verification
+                // for currency in 0..N_CURRENCIES {
+                //     // Each balance cell is constrained to be within the range defined by N_BYTES
+                //     range_check_chip.assign(
+                //         layouter.namespace(|| {
+                //             format!(
+                //                 "{}: currency {}: range check sibling balance",
+                //                 namespace_prefix, currency
+                //             )
+                //         }),
+                //         &sibling_balances[currency],
+                //     )?;
+                // }
 
                 sibling_hash = computed_sibling_hash;
             };
