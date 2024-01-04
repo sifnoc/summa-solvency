@@ -38,6 +38,8 @@ fn bench_kzg<const K: u32, const N_USERS: usize, const N_CURRENCIES: usize, cons
     let _ =
         parse_csv_to_entries::<&str, N_CURRENCIES>(csv_path, &mut entries, &mut cryptos).unwrap();
 
+    let circuit = UnivariateGrandSum::<N_USERS, N_CURRENCIES>::init(entries.to_vec());
+
     c.bench_function(&range_check_bench_name, |b| {
         b.iter_batched(
             || circuit.clone(), // Setup function: clone the circuit for each iteration
