@@ -155,6 +155,15 @@ fn criterion_benchmark(_c: &mut Criterion) {
     const N_CURRENCIES: usize = 1;
     const N_POINTS: usize = 2;
 
+    // Uncertain why 6 rows are utilized in the range check circuit; user data seems unable to be assigned to these rows.
+    {
+        const K: u32 = 17;
+        const N_USERS: usize = 65530;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
+        );
+    }
     {
         const K: u32 = 18;
         const N_USERS: usize = 131072;
