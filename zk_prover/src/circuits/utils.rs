@@ -16,7 +16,7 @@ use halo2_proofs::{
         commitment::{Params, ParamsProver},
         kzg::{
             commitment::{KZGCommitmentScheme, ParamsKZG},
-            multiopen::{ProverSHPLONK, VerifierSHPLONK},
+            multiopen::{ProverGWC, VerifierGWC},
             strategy::SingleStrategy,
         },
     },
@@ -98,7 +98,7 @@ pub fn full_prover<C: Circuit<Fp> + CircuitExt<Fp>>(
     let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
     create_proof::<
         KZGCommitmentScheme<Bn256>,
-        ProverSHPLONK<'_, Bn256>,
+        ProverGWC<'_, Bn256>,
         Challenge255<G1Affine>,
         _,
         Blake2bWrite<Vec<u8>, G1Affine, Challenge255<G1Affine>>,
@@ -126,7 +126,7 @@ pub fn full_verifier(
 
     verify_proof::<
         KZGCommitmentScheme<Bn256>,
-        VerifierSHPLONK<'_, Bn256>,
+        VerifierGWC<'_, Bn256>,
         Challenge255<G1Affine>,
         Blake2bRead<&[u8], G1Affine, Challenge255<G1Affine>>,
         SingleStrategy<'_, Bn256>,
