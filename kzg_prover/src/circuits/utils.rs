@@ -16,7 +16,7 @@ use halo2_proofs::{
         commitment::{Blind, CommitmentScheme, Params, ParamsProver, Prover, Verifier},
         kzg::{
             commitment::{KZGCommitmentScheme, ParamsKZG},
-            multiopen::{ProverSHPLONK, VerifierSHPLONK},
+            multiopen::{ProverGWC, VerifierGWC},
             strategy::{AccumulatorStrategy, SingleStrategy},
         },
         Coeff, Polynomial, ProverQuery, VerificationStrategy, VerifierQuery,
@@ -100,7 +100,7 @@ pub fn full_prover<C: Circuit<Fp>>(
     let mut transcript = Blake2bWrite::<_, _, Challenge255<_>>::init(vec![]);
     let result = create_proof::<
         KZGCommitmentScheme<Bn256>,
-        ProverSHPLONK<'_, Bn256>,
+        ProverGWC<'_, Bn256>,
         Challenge255<G1Affine>,
         _,
         Blake2bWrite<Vec<u8>, G1Affine, Challenge255<G1Affine>>,
@@ -145,7 +145,7 @@ pub fn open_grand_sums(
     let challenge = Fp::zero();
     create_opening_proof_at_challenge::<
         KZGCommitmentScheme<Bn256>,
-        ProverSHPLONK<'_, Bn256>,
+        ProverGWC<'_, Bn256>,
         Challenge255<G1Affine>,
         Blake2bWrite<Vec<u8>, G1Affine, Challenge255<G1Affine>>,
     >(
@@ -186,7 +186,7 @@ pub fn open_user_points(
     let omega_raised = omega.pow_vartime([u64::from(user_index)]);
     create_opening_proof_at_challenge::<
         KZGCommitmentScheme<Bn256>,
-        ProverSHPLONK<'_, Bn256>,
+        ProverGWC<'_, Bn256>,
         Challenge255<G1Affine>,
         Blake2bWrite<Vec<u8>, G1Affine, Challenge255<G1Affine>>,
     >(
@@ -237,7 +237,7 @@ pub fn verify_grand_sum_openings<const N_CURRENCIES: usize>(
 
     let (verified, constant_terms) = verify_opening::<
         KZGCommitmentScheme<Bn256>,
-        VerifierSHPLONK<'_, Bn256>,
+        VerifierGWC<'_, Bn256>,
         Challenge255<G1Affine>,
         Blake2bRead<_, _, Challenge255<_>>,
         AccumulatorStrategy<_>,
@@ -299,7 +299,7 @@ pub fn verify_user_inclusion<const N_POINTS: usize>(
 
     let (verified, evaluations_at_challenge) = verify_opening::<
         KZGCommitmentScheme<Bn256>,
-        VerifierSHPLONK<'_, Bn256>,
+        VerifierGWC<'_, Bn256>,
         Challenge255<G1Affine>,
         Blake2bRead<_, _, Challenge255<_>>,
         AccumulatorStrategy<_>,
@@ -454,7 +454,7 @@ pub fn full_verifier(
 
     verify_proof::<
         KZGCommitmentScheme<Bn256>,
-        VerifierSHPLONK<'_, Bn256>,
+        VerifierGWC<'_, Bn256>,
         Challenge255<G1Affine>,
         Blake2bRead<&[u8], G1Affine, Challenge255<G1Affine>>,
         SingleStrategy<'_, Bn256>,
