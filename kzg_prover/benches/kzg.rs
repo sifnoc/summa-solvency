@@ -203,24 +203,78 @@ fn bench_kzg<const K: u32, const N_USERS: usize, const N_CURRENCIES: usize, cons
 }
 
 fn criterion_benchmark(_c: &mut Criterion) {
-    const N_CURRENCIES: usize = 2;
-    const N_POINTS: usize = 3;
-
     // Demonstrating that a higher value of K has a more significant impact on benchmark performance than the number of users
+    const N_USERS: usize = 16;
     {
-        const K: u32 = 18;
-        const N_USERS: usize = 16;
+        const N_CURRENCIES: usize = 1;
+        const N_POINTS: usize = 2;
+        const K: u32 = 17;
         bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
             format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
-            format!("../csv/entry_{N_USERS}.csv").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
         );
     }
     {
-        const K: u32 = 17;
-        const N_USERS: usize = 64;
+        const N_CURRENCIES: usize = 1;
+        const N_POINTS: usize = 2;
+        const K: u32 = 18;
         bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
             format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
-            format!("../csv/entry_{N_USERS}.csv").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
+        );
+    }
+    {
+        const N_CURRENCIES: usize = 1;
+        const N_POINTS: usize = 2;
+        const K: u32 = 19;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
+        );
+    }
+    {
+        const N_CURRENCIES: usize = 1;
+        const N_POINTS: usize = 2;
+        const K: u32 = 20;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
+        );
+    }
+    {
+        const N_CURRENCIES: usize = 2;
+        const N_POINTS: usize = 2;
+        const K: u32 = 17;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
+        );
+    }
+    {
+        const N_CURRENCIES: usize = 2;
+        const N_POINTS: usize = 3;
+        const K: u32 = 18;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
+        );
+    }
+    {
+        const N_CURRENCIES: usize = 2;
+        const N_POINTS: usize = 3;
+        const K: u32 = 19;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
+        );
+    }
+    {
+        const N_CURRENCIES: usize = 2;
+        const N_POINTS: usize = 3;
+        const K: u32 = 20;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, N_POINTS>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+            format!("../csv/{N_CURRENCIES}_entry_{N_USERS}.csv").as_str(),
         );
     }
 }
