@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { ethers } from "hardhat";
-import { Verifier as SnarkVerifier, InclusionVerifier, GrandsumVerifier, Halo2VerifyingKey } from "../typechain-types";
+import { Verifier as SnarkVerifier, InclusionVerifier, GrandsumVerifier, Halo2VerifyingKey, PairingCheck } from "../typechain-types";
 import { BigNumber, providers } from "ethers";
 import { Bytes, BytesLike, defaultAbiCoder, isBytesLike } from "ethers/lib/utils";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
@@ -65,12 +65,124 @@ describe("Verifier Contracts", () => {
 
   });
 
+  describe("Pairing Check test", () => {
+    let pairingCheck: PairingCheck;
+    beforeEach(async () => {
+      pairingCheck = await ethers.deployContract(
+        "src/PairingCheck.sol:PairingCheck",
+      ) as PairingCheck;
+      await pairingCheck.deployed();
+    });
+
+    it("grandsum pairing check with G2 points from Verifyingkey - total balannce 1", async () => {
+      const pairingInput = fs.readFileSync(
+        path.resolve(
+          __dirname,
+          "../../kzg_prover/bin/grandsum_pairing_input_0.json"
+        ),
+        "utf-8"
+      );
+      const inputData: any = JSON.parse(pairingInput);
+      let res = await pairingCheck.testPairingWithInputsBasedVerifyingKey(
+        inputData.lhs_x, inputData.lhs_y, inputData.rhs_x, inputData.rhs_y)
+      expect(res).to.be.true;
+    })
+
+    it("grandsum pairing check with G2 points from Verifyingkey - total balannce 2", async () => {
+      const pairingInput = fs.readFileSync(
+        path.resolve(
+          __dirname,
+          "../../kzg_prover/bin/grandsum_pairing_input_1.json"
+        ),
+        "utf-8"
+      );
+      const inputData: any = JSON.parse(pairingInput);
+      let res = await pairingCheck.testPairingWithInputsBasedVerifyingKey(
+        inputData.lhs_x, inputData.lhs_y, inputData.rhs_x, inputData.rhs_y)
+      expect(res).to.be.true;
+    })
+
+    it("grandsum pairing check with G2 points from given - total balannce 1", async () => {
+      const pairingInput = fs.readFileSync(
+        path.resolve(
+          __dirname,
+          "../../kzg_prover/bin/grandsum_pairing_input_0.json"
+        ),
+        "utf-8"
+      );
+      const inputData: any = JSON.parse(pairingInput);
+      let res = await pairingCheck.testPairingWithInputs(
+        inputData.lhs_x, inputData.lhs_y, inputData.rhs_x, inputData.rhs_y,
+        inputData.neg_g2_x_1, inputData.neg_g2_x_2, inputData.neg_g2_y_1, inputData.neg_g2_y_2);
+      expect(res).to.be.true;
+    })
+
+    it("grandsum pairing check with G2 points from given - total balannce 2", async () => {
+      const pairingInput = fs.readFileSync(
+        path.resolve(
+          __dirname,
+          "../../kzg_prover/bin/grandsum_pairing_input_1.json"
+        ),
+        "utf-8"
+      );
+      const inputData: any = JSON.parse(pairingInput);
+      let res = await pairingCheck.testPairingWithInputs(
+        inputData.lhs_x, inputData.lhs_y, inputData.rhs_x, inputData.rhs_y,
+        inputData.neg_g2_x_1, inputData.neg_g2_x_2, inputData.neg_g2_y_1, inputData.neg_g2_y_2);
+      expect(res).to.be.true;
+    })
+
+    it("inclusion pairing check with G2 points from given - username", async () => {
+      const pairingInput = fs.readFileSync(
+        path.resolve(
+          __dirname,
+          "../../kzg_prover/bin/inclusion_pairing_input_0.json"
+        ),
+        "utf-8"
+      );
+      const inputData: any = JSON.parse(pairingInput);
+      let res = await pairingCheck.testPairingWithInputs(
+        inputData.lhs_x, inputData.lhs_y, inputData.rhs_x, inputData.rhs_y,
+        inputData.neg_g2_x_1, inputData.neg_g2_x_2, inputData.neg_g2_y_1, inputData.neg_g2_y_2);
+      expect(res).to.be.true;
+    })
+    it("inclusion pairing check with G2 points from given - total balance 1", async () => {
+      const pairingInput = fs.readFileSync(
+        path.resolve(
+          __dirname,
+          "../../kzg_prover/bin/inclusion_pairing_input_1.json"
+        ),
+        "utf-8"
+      );
+      const inputData: any = JSON.parse(pairingInput);
+      let res = await pairingCheck.testPairingWithInputs(
+        inputData.lhs_x, inputData.lhs_y, inputData.rhs_x, inputData.rhs_y,
+        inputData.neg_g2_x_1, inputData.neg_g2_x_2, inputData.neg_g2_y_1, inputData.neg_g2_y_2);
+      expect(res).to.be.true;
+    })
+    it("inclusion pairing check with G2 points from given - total balance 2", async () => {
+      const pairingInput = fs.readFileSync(
+        path.resolve(
+          __dirname,
+          "../../kzg_prover/bin/inclusion_pairing_input_2.json"
+        ),
+        "utf-8"
+      );
+      const inputData: any = JSON.parse(pairingInput);
+      let res = await pairingCheck.testPairingWithInputs(
+        inputData.lhs_x, inputData.lhs_y, inputData.rhs_x, inputData.rhs_y,
+        inputData.neg_g2_x_1, inputData.neg_g2_x_2, inputData.neg_g2_y_1, inputData.neg_g2_y_2);
+      expect(res).to.be.true;
+    })
+  });
+
   describe("Snark Proof Verifier", () => {
     let snarkVerifier: SnarkVerifier;
     let verifyingKey: Halo2VerifyingKey;
     let commitmentCalldata: {
       range_check_snark_proof: BytesLike;
       grand_sums_batch_proof: BytesLike;
+      total_balances: BigNumber[];
     };
     beforeEach(async () => {
       const deploymentInfo = await loadFixture(deployVerifyingFixture);
@@ -90,7 +202,7 @@ describe("Verifier Contracts", () => {
       expect(await snarkVerifier.verifyProof(verifyingKey.address, commitmentCalldata.range_check_snark_proof, [1])).to.be.true;
     });
 
-    it("hould fail to verify snark proof without the number of instances", async () => {
+    it("should fail to verify snark proof without the number of instances", async () => {
       await expect(snarkVerifier.verifyProof(verifyingKey.address, commitmentCalldata.range_check_snark_proof, [])).to.be.reverted;
     });
 
@@ -102,6 +214,7 @@ describe("Verifier Contracts", () => {
     let commitmentCalldata: {
       range_check_snark_proof: BytesLike;
       grand_sums_batch_proof: BytesLike;
+      total_balances: BigNumber[];
     };
 
     beforeEach(async () => {
@@ -119,6 +232,7 @@ describe("Verifier Contracts", () => {
       // Concatenates the snark proof and the grand sum proof
       let snarkProofArray = ethers.utils.arrayify(commitmentCalldata.range_check_snark_proof);
       let grandSumProofArray = ethers.utils.arrayify(commitmentCalldata.grand_sums_batch_proof);
+      let totalBalances = commitmentCalldata.total_balances;
 
       // The first 64 bytes of the snark proof represent a commitment to the corresponding username polynomial
       // Starting from the next 64 bytes, each set of 64 bytes represents commitments corresponding to the total sum of balances
@@ -132,7 +246,7 @@ describe("Verifier Contracts", () => {
       //  Where `N` is the number of currencies
       let proofs = ethers.utils.hexlify(ethers.utils.concat([grandSumProofArray, grandSumCommitments]));
 
-      expect(await grandSumVerifier.verifyProof(verifyingKey.address, proofs, [])).to.be.true;
+      expect(await grandSumVerifier.verifyProof(verifyingKey.address, proofs, totalBalances)).to.be.true;
     });
   });
 
@@ -144,6 +258,7 @@ describe("Verifier Contracts", () => {
     let commitmentCalldata: {
       range_check_snark_proof: BytesLike;
       grand_sums_batch_proof: BytesLike;
+      total_balances: BigNumber[];
     };
     let challenge: BytesLike;
     let username: BytesLike;
@@ -194,12 +309,20 @@ describe("Verifier Contracts", () => {
       let combinedProof = ethers.utils.concat([proofArray, snarkProofarray]);
       let proofs = ethers.utils.hexlify(combinedProof);
 
-      expect(await inclusionVerifier.verifyProof(
+      // let verify_tx = await inclusionVerifier.populateTransaction.verifyProof(
+      //   verifyingKey.address,
+      //   challenge,
+      //   proofs,
+      //   [username_biguint, balance1, balance2]);
+
+      // console.log(verify_tx);
+
+      let res = await inclusionVerifier.verifyProof(
         verifyingKey.address,
         challenge,
         proofs,
-        [username_biguint, balance1, balance2]
-      )).to.be.true;
+        [username_biguint, balance1, balance2]);
+      expect(res).to.be.true;
     });
   });
 });

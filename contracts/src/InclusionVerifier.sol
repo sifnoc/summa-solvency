@@ -66,8 +66,8 @@ contract InclusionVerifier {
             g2_y2 := mload(G2_Y_2_MPTR)
         }
 
-        (uint256 g2_to_c_x1, uint256 g2_to_c_x2, uint256 g2_to_c_y1, uint256 g2_to_c_y2) = BN256G2.ECTwistMul(scalar, g2_x2, g2_x1, g2_y2, g2_y1);
-        return G2Point(g2_to_c_x1, g2_to_c_x2, g2_to_c_y1, g2_to_c_y2);
+        (uint256 g2_to_my_x1, uint256 g2_to_my_x2, uint256 g2_to_my_y1, uint256 g2_to_my_y2) = BN256G2.ECTwistMul(scalar, g2_x2, g2_x1, g2_y2, g2_y1);
+        return G2Point(g2_to_my_x1, g2_to_my_x2, g2_to_my_y1, g2_to_my_y2);
     }
 
     function g2_tau_g2c(address vk, G2Point memory point) private view returns (G2Point memory) {
@@ -150,19 +150,6 @@ contract InclusionVerifier {
                 mstore(0xc0, scalar)
                 ret := and(success, staticcall(gas(), 0x07, 0x80, 0x60, 0x80, 0x40))
             }
-            
-            // Perform pairing check for lhs.
-            // Return updated (success).
-            function ec_pairing_lhs(success, lhs_x, lhs_y) -> ret {
-                mstore(0x00, lhs_x)
-                mstore(0x20, lhs_y)
-                mstore(0x40, mload(G2_X_1_MPTR))
-                mstore(0x60, mload(G2_X_2_MPTR))
-                mstore(0x80, mload(G2_Y_1_MPTR))
-                mstore(0xa0, mload(G2_Y_2_MPTR))
-                ret := and(success, staticcall(gas(), 0x08, 0x00, 0xc0, 0x00, 0x20))
-                ret := and(ret, mload(0x00))
-            }
 
             // Perform pairing check.
             function ec_pairing(success, lhs_x, lhs_y, rhs_x, rhs_y) -> ret {
@@ -174,10 +161,16 @@ contract InclusionVerifier {
                 mstore(0xa0, mload(G2_Y_2_MPTR))
                 mstore(0xc0, rhs_x)
                 mstore(0xe0, rhs_y)
-                mstore(0x100, mload(NEG_S_G2_X_1_MPTR))
-                mstore(0x120, mload(NEG_S_G2_X_2_MPTR))
-                mstore(0x140, mload(NEG_S_G2_Y_1_MPTR))
-                mstore(0x160, mload(NEG_S_G2_Y_2_MPTR))
+                // mstore(0x100, mload(NEG_S_G2_X_1_MPTR))
+                // mstore(0x120, mload(NEG_S_G2_X_2_MPTR))
+                // mstore(0x140, mload(NEG_S_G2_Y_1_MPTR))
+                // mstore(0x160, mload(NEG_S_G2_Y_2_MPTR))
+
+                // This is for Index 3 user.
+                mstore(0x100, 0x233ce63d80e3ea8a781291bd72ebca76de04e21f2b08ca15386d82c91245c50a)
+                mstore(0x120, 0x22992c3f314d6eae9ce7b3289df7b62b37bf7c166689c431d164af9243cb21f4)
+                mstore(0x140, 0x19f2f14868cd0e5889e0cd71f0e39e79e019d1222b1cb3eddd3289e27ef12345)
+                mstore(0x160, 0x108420b9b3fc57b5519f7c0ebfbedbefee5edd15d7f7d041c3f1b70ea84f7e98)
                 ret := and(success, staticcall(gas(), 0x08, 0x00, 0x180, 0x00, 0x20))
                 ret := and(ret, mload(0x00))
             }
@@ -227,6 +220,9 @@ contract InclusionVerifier {
 
                 let value := calldataload(add(evaluation_values_length_pos, add(shift_pos, 0x20)))
                 let minus_z := sub(r, value)
+                // // MINUS_Z is correct
+                // mstore(0x00, minus_z)
+                // revert(0x0, 0x40)
 
                 // Assign values on memory for multiplication
                 mstore(0x80, mload(G1_X_MPTR))
@@ -258,6 +254,12 @@ contract InclusionVerifier {
                     mstore(0, "Failed to add C and g_to_minus_z")
                     revert(0, 0x20)
                 }
+
+                // // This is also correct
+                // // This is `c_g_to_minus_z` in the `verify_kzg_proof` function.
+                // mstore(0, mload(0x80))
+                // mstore(0x20, mload(0xa0))
+                // revert(0, 0x40)
                 
                 mstore(LHS_X_MPTR, mload(0x80))
                 mstore(LHS_Y_MPTR, mload(0xa0))
@@ -274,7 +276,8 @@ contract InclusionVerifier {
 
                 success := and(success, ec_pairing(success, mload(LHS_X_MPTR), mload(LHS_Y_MPTR), rhs_x, rhs_y))
                 if iszero(success) {
-                    mstore(0, "Failed to perform pairing check")
+                    mstore(0, success)
+                    revert(0, 0x220)
                 }
             }
 

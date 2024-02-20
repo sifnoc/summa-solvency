@@ -11,6 +11,7 @@ use halo2_proofs::{
         Coeff, EvaluationDomain, Polynomial,
     },
 };
+use serde::{Deserialize, Serialize};
 
 /// Commit to a polynomial using the KZG commitment scheme
 ///
@@ -142,6 +143,55 @@ where
     let g_tau = params.s_g2();
     let g_tau_g_to_minus_y = g_tau + g_to_minus_y;
     let right_side = Bn256::pairing(&pi.to_affine(), &g_tau_g_to_minus_y.to_affine());
-
     left_side == right_side
+}
+
+// This is for debugging verifying kzg proof on the solidity verifier
+#[derive(Serialize, Deserialize)]
+pub struct PairingInput {
+    // c_g_to_minus_z
+    lhs_x: String,
+    lhs_y: String,
+    // pi
+    rhs_x: String,
+    rhs_y: String,
+    // g_tau_g_to_minus_y
+    neg_g2_x_1: String,
+    neg_g2_x_2: String,
+    neg_g2_y_1: String,
+    neg_g2_y_2: String,
+}
+
+pub fn verify_kzg_proof_with_exporting_pairing_input(
+    params: &ParamsKZG<Bn256>,
+    c: G1,
+    pi: G1,
+    y: &Fp,
+    z: &Fp,
+) -> (bool, PairingInput)
+where
+    G1Affine: PairingCurveAffine<Pair = G2Affine, PairingResult = Gt>,
+{
+    let g_to_minus_z = G1Affine::generator() * &(-z);
+    let c_g_to_minus_z: G1 = c + g_to_minus_z;
+    let left_side = Bn256::pairing(&c_g_to_minus_z.to_affine(), &G2Affine::generator());
+
+    let g_to_minus_y = G2Affine::generator() * (-y);
+    let g_tau = params.s_g2();
+    let g_tau_g_to_minus_y = g_tau + g_to_minus_y;
+
+    let calculated_g2_points = g_tau_g_to_minus_y.to_affine();
+    let pairing_input = PairingInput {
+        lhs_x: format!("{:?}", c_g_to_minus_z.to_affine().x),
+        lhs_y: format!("{:?}", c_g_to_minus_z.to_affine().y),
+        rhs_x: format!("{:?}", pi.to_affine().x),
+        rhs_y: format!("{:?}", pi.to_affine().y),
+        neg_g2_x_1: format!("{:?}", calculated_g2_points.x.c1),
+        neg_g2_x_2: format!("{:?}", calculated_g2_points.x.c0),
+        neg_g2_y_1: format!("{:?}", calculated_g2_points.y.c1),
+        neg_g2_y_2: format!("{:?}", calculated_g2_points.y.c0),
+    };
+
+    let right_side = Bn256::pairing(&pi.to_affine(), &g_tau_g_to_minus_y.to_affine());
+    return (left_side == right_side, pairing_input);
 }
