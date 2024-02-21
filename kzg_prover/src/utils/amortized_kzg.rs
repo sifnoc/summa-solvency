@@ -147,7 +147,7 @@ where
 }
 
 // This is for debugging verifying kzg proof on the solidity verifier
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct PairingInput {
     // c_g_to_minus_z
     lhs_x: String,
@@ -176,8 +176,8 @@ where
     let c_g_to_minus_z: G1 = c + g_to_minus_z;
     let left_side = Bn256::pairing(&c_g_to_minus_z.to_affine(), &G2Affine::generator());
 
-    let g_to_minus_y = G2Affine::generator() * (-y);
-    let g_tau = params.s_g2();
+    let g_to_minus_y = G2Affine::generator() * y;
+    let g_tau = -params.s_g2();
     let g_tau_g_to_minus_y = g_tau + g_to_minus_y;
 
     let calculated_g2_points = g_tau_g_to_minus_y.to_affine();
