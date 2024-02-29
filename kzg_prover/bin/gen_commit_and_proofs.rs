@@ -28,7 +28,7 @@ use summa_solvency::{
 };
 
 const K: u32 = 17;
-const N_CURRENCIES: usize = 2;
+const N_CURRENCIES: usize = 350;
 const N_USERS: usize = 16;
 
 #[derive(Serialize, Deserialize)]
@@ -52,8 +52,12 @@ fn main() {
     let mut cryptos = vec![Cryptocurrency::init_empty(); N_CURRENCIES];
 
     // Parse CSV to update entries and cryptos arrays
-    parse_csv_to_entries::<&str, N_CURRENCIES>("../csv/entry_16.csv", &mut entries, &mut cryptos)
-        .unwrap();
+    parse_csv_to_entries::<&str, N_CURRENCIES>(
+        "../csv/350_entry_16.csv",
+        &mut entries,
+        &mut cryptos,
+    )
+    .unwrap();
 
     let univariate_grand_sum_circuit = UnivariateGrandSum::<
         N_USERS,
