@@ -9,8 +9,8 @@ use halo2_solidity_verifier::{compile_solidity, BatchOpenScheme::Bdfg21, Solidit
 use summa_solvency::circuits::utils::generate_setup_artifacts;
 use summa_solvency::circuits::{merkle_sum_tree::MstInclusionCircuit, WithInstances};
 
-const LEVELS: usize = 4;
-const N_CURRENCIES: usize = 2;
+const LEVELS: usize = 18;
+const N_CURRENCIES: usize = 350;
 const N_BYTES: usize = 8;
 
 fn main() {
