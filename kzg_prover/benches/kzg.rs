@@ -152,14 +152,15 @@ fn bench_kzg<
         );
     });
 
-    c.bench_function(&calculate_h_bench_name, |b| {
-        b.iter_batched(
-            || (0..N_CURRENCIES + 1),
-            |column_range| compute_h_parallel(&advice_polys.advice_polys, &params, column_range),
-            criterion::BatchSize::SmallInput,
-        );
-    });
+    // c.bench_function(&calculate_h_bench_name, |b| {
+    //     b.iter_batched(
+    //         || (0..N_CURRENCIES + 1),
+    //         |column_range| compute_h_parallel(&advice_polys.advice_polys, &params, column_range),
+    //         criterion::BatchSize::SmallInput,
+    //     );
+    // });
 
+    println!("Start benchmark for amortize approach");
     let h_vectors = compute_h_parallel(&advice_polys.advice_polys, &params, 0..N_CURRENCIES + 1);
     let vec_of_slices = h_vectors.iter().map(|v| v.as_slice()).collect::<Vec<_>>();
     let h_slices = vec_of_slices.as_slice();
