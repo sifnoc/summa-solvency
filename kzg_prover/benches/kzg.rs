@@ -257,7 +257,7 @@ fn bench_kzg<
 }
 
 fn criterion_benchmark(_c: &mut Criterion) {
-    const N_CURRENCIES: usize = 1;
+    const N_CURRENCIES: usize = 350;
 
     // Demonstrating that a higher value of K has a more significant impact on benchmark performance than the number of users
     #[cfg(not(feature = "no_range_check"))]
