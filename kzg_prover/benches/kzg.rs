@@ -267,6 +267,79 @@ fn criterion_benchmark(_c: &mut Criterion) {
             format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
         );
     }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 18;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 19;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 20;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 21;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 22;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 23;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 24;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 25;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+    #[cfg(not(feature = "no_range_check"))]
+    {
+        const K: u32 = 26;
+        const N_USERS: usize = 2usize.pow(K) - 6;
+        bench_kzg::<K, N_USERS, N_CURRENCIES, UnivariateGrandSumConfig<N_CURRENCIES, N_USERS>>(
+            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+        );
+    }
+
     //Use the following benchmarks for quick evaluation/prototyping (no range check)
     #[cfg(feature = "no_range_check")]
     {
