@@ -149,16 +149,8 @@ fn bench_mst<
 }
 
 fn criterion_benchmark(_c: &mut Criterion) {
-    const K: u32 = 13;
     {
-        const N_CURRENCIES: usize = 1;
-        const LEVELS: usize = 18;
-        const N_USERS: usize = 2usize.pow(LEVELS as u32) - 6;
-        bench_mst::<K, LEVELS, N_USERS, 8, N_CURRENCIES>(
-            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
-        );
-    }
-    {
+        const K: u32 = 20;
         const N_CURRENCIES: usize = 350;
         const LEVELS: usize = 18;
         const N_USERS: usize = 2usize.pow(LEVELS as u32) - 6;
