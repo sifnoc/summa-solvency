@@ -34,35 +34,20 @@ fn bench_mst<
             chain: "ETH".to_string(),
         });
 
-    c.bench_function(&format!("{name} - build merkle sum tree"), |b| {
-        b.iter_batched(
-            || (entries.clone(), cryptocurrencies.to_vec()),
-            |(entries, cryptocurrencies)| {
-                let _ = MerkleSumTree::<N_CURRENCIES, N_BYTES>::from_entries(
-                    entries,
-                    cryptocurrencies,
-                    false,
-                )
-                .unwrap();
-            },
-            criterion::BatchSize::SmallInput,
-        );
-    });
-
-    c.bench_function(&format!("{name} - build sorted merkle sum tree"), |b| {
-        b.iter_batched(
-            || (entries.clone(), cryptocurrencies.to_vec()),
-            |(entries, cryptocurrencies)| {
-                let _ = MerkleSumTree::<N_CURRENCIES, N_BYTES>::from_entries(
-                    entries,
-                    cryptocurrencies,
-                    true,
-                )
-                .unwrap();
-            },
-            criterion::BatchSize::SmallInput,
-        );
-    });
+    // c.bench_function(&format!("{name} - build sorted merkle sum tree"), |b| {
+    //     b.iter_batched(
+    //         || (entries.clone(), cryptocurrencies.to_vec()),
+    //         |(entries, cryptocurrencies)| {
+    //             let _ = MerkleSumTree::<N_CURRENCIES, N_BYTES>::from_entries(
+    //                 entries,
+    //                 cryptocurrencies,
+    //                 true,
+    //             )
+    //             .unwrap();
+    //         },
+    //         criterion::BatchSize::SmallInput,
+    //     );
+    // });
 
     // Generate a random user index
     let get_random_user_index = || {
@@ -146,16 +131,46 @@ fn bench_mst<
             criterion::BatchSize::SmallInput,
         );
     });
+
+    c.bench_function(&format!("{name} - build merkle sum tree"), |b| {
+        b.iter_batched(
+            || (entries.clone(), cryptocurrencies.to_vec()),
+            |(entries, cryptocurrencies)| {
+                let _ = MerkleSumTree::<N_CURRENCIES, N_BYTES>::from_entries(
+                    entries,
+                    cryptocurrencies,
+                    false,
+                )
+                .unwrap();
+            },
+            criterion::BatchSize::SmallInput,
+        );
+    });
 }
 
 fn criterion_benchmark(_c: &mut Criterion) {
+    {
+        const K: u32 = 19;
+        const N_CURRENCIES: usize = 175;
+        const LEVELS: usize = 18;
+        const N_USERS: usize = 2usize.pow(LEVELS as u32) - 6;
+        bench_mst::<K, LEVELS, N_USERS, 8, N_CURRENCIES>(
+            format!(
+                "K = {K}, LEVELS = {LEVELS}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}"
+            )
+            .as_str(),
+        );
+    }
     {
         const K: u32 = 20;
         const N_CURRENCIES: usize = 350;
         const LEVELS: usize = 18;
         const N_USERS: usize = 2usize.pow(LEVELS as u32) - 6;
         bench_mst::<K, LEVELS, N_USERS, 8, N_CURRENCIES>(
-            format!("K = {K}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}").as_str(),
+            format!(
+                "K = {K}, LEVELS = {LEVELS}, N_USERS = {N_USERS}, N_CURRENCIES = {N_CURRENCIES}"
+            )
+            .as_str(),
         );
     }
 }
