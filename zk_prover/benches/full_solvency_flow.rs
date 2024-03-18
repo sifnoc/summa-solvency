@@ -56,7 +56,7 @@ fn bench_mst<
     };
 
     let merkle_sum_tree = MerkleSumTree::<N_CURRENCIES, N_BYTES>::from_entries(
-        entries,
+        entries.clone(),
         cryptocurrencies.to_vec(),
         false,
     )
