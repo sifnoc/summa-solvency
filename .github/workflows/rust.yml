@@ -83,7 +83,7 @@ jobs:
 
   wakeup:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.fork == false
+    if: github.repository == 'summa-dev/summa-solvency'
     permissions:
       id-token: write
       contents: read
