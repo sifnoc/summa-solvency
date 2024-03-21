@@ -49,9 +49,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-
       - name: nova recursive approach
         run: |
           cd zk_prover
