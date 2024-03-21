@@ -13,7 +13,7 @@ concurrency:
 env:
   CARGO_TERM_COLOR: always
 
-jobs:
+jobs:        
   test-zk-prover:
     runs-on: ubuntu-latest
     steps:
@@ -80,3 +80,46 @@ jobs:
         run: |
           cd backend
           cargo run --release --example summa_solvency_flow
+
+  wakeup:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::490752553772:role/summa-solvency-ec2-slc
+          role-duration-seconds: 900
+          aws-region: us-west-2
+
+      - name: Wakeup runner
+        run: .github/scripts/wakeup.sh 
+
+  test-integration-backend:
+    runs-on: [summa-solvency-runner]
+    needs: [wakeup]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update Circuit to contract
+        run: |
+          cd zk_prover
+          cargo run --release --example gen_inclusion_verifier
+          cargo run --release --example gen_commitment
+      
+      - name: Update abi for Backend
+        run: |
+          cd contracts
+          npm install
+          npx hardhat scripts/deploy.ts
+
+      - name: Test backend with updated contract
+        run: |
+          cd backend
+          cargo test --release -- --nocapture
