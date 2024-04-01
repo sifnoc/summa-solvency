@@ -37,9 +37,11 @@ Everyone can perform this verification.&#x20;
 
 ### 3. Inclusion Proof
 
+The Inclusion Proof is a zero-knowledge[ proof of their inclusion](../circuits/merkle-sum-tree-inclusion.md) in the Merkle Sum Tree, which allows each user to verify that their funds were included in the Liabilities Commitment. It is generated on demand when users request it.
+
 Even if all the previous steps are verified correctly, there's still a risk that the Custodian has maliciously manipulated the liabilities. For example, excluding "whales" from the Merkle Sum Tree, understating user balances, or adding negative balances would result in fake liabilities sums. [Here](https://hackmd.io/j85xBCYZRjWVI0eeXWudwA#Proof-of-Liabilities-PoL), you can find other common attack vectors on the liabilities side.
 
-The only way to ensure this is not the case is to ask individual users to verify their correct accounting in the liabilities. Practically speaking, the Custodian, when queried by users, provides them with a zero-knowledge[ proof of their inclusion](../circuits/merkle-sum-tree-inclusion.md) in the Merkle Sum Tree.&#x20;
+The only way to ensure this is not the case is to ask individual users to verify their correct accounting in the liabilities.
 
 ### 4. Proof Verification
 
