@@ -39,6 +39,13 @@ impl<
                 grand_total[i] += big_uint_to_fp::<Fp>(balance);
             }
         }
+        println!("Grand total: {:?}", grand_total);
+
+        // Manipulate total sum
+        grand_total[0] += Fp::one();
+        grand_total[1] -= Fp::one();
+
+        println!("After manipulation: {:?}", grand_total);
 
         Self {
             entries: user_entries,
